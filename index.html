@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leave Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6fa;--surface:#fff;--text:#0f172a;--muted:#5b6679;--line:#e3e7ef;--accent:#4f46e5;--accent-soft:#eef0ff;
+  --al:#1d4ed8;--al-bg:#dbe7ff;--lsl:#9a3412;--lsl-bg:#ffe8cc;--lsl-bg2:#ffd29e;--ph:#7e22ce;--ph-bg:#f1e4ff;--we:#eef1f6;
+  --ok:#15803d;--ok-bg:#dcfce7;--warn:#b45309;--warn-bg:#fef3c7;--bad:#b91c1c;--bad-bg:#fee2e2;--shadow:0 1px 2px rgba(15,23,42,.06),0 4px 16px rgba(15,23,42,.05);
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0b1020;--surface:#131a2e;--text:#e8ecf6;--muted:#9aa6bd;--line:#242d47;--accent:#8b8bff;--accent-soft:#1d2447;
+  --al:#8db4ff;--al-bg:#1c3270;--lsl:#ffc489;--lsl-bg:#4a2a10;--lsl-bg2:#6a3b14;--ph:#d6a8ff;--ph-bg:#3a2260;--we:#171f36;
+  --ok:#6ee7a0;--ok-bg:#12351f;--warn:#fcd34d;--warn-bg:#3a2d0b;--bad:#fca5a5;--bad-bg:#431515;--shadow:none}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-feature-settings:"tnum"}
+h1,h2,h3{margin:0;line-height:1.25}
+h2{font-size:17px;font-weight:650}h3{font-size:14px;font-weight:650}
+p{margin:.3em 0}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+header.top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:20px 0 12px}
+.brand h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.brand p{color:var(--muted);font-size:13px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:8px 14px;border-radius:10px;font:inherit;font-weight:550;font-size:14px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.btn.small{padding:4px 10px;font-size:13px;border-radius:8px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn:focus-visible,.day:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;position:sticky;top:0;z-index:20;padding:8px 0;background:linear-gradient(var(--bg) 80%,transparent)}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow)}
+.stat .k{font-size:12px;color:var(--muted);font-weight:550;text-transform:uppercase;letter-spacing:.04em}
+.stat .v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.stat .s{font-size:12.5px;color:var(--muted)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.alerts{display:grid;gap:6px;margin:6px 0 2px}
+.alert{border-radius:10px;padding:8px 12px;font-size:13.5px;border:1px solid;display:flex;gap:8px}
+.alert.bad{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.alert.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.alert.note{background:var(--accent-soft);color:var(--text);border-color:var(--line)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;margin:14px 0 12px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:fit-content;max-width:100%}
+.tab{appearance:none;border:0;background:none;padding:8px 14px;border-radius:9px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--accent);color:#fff}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card>h2{margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+label.f{display:grid;gap:3px;font-size:13px;font-weight:550}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=number],input[type=date],input[type=text],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);font:inherit}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:14px}.chk input{margin-top:4px;width:16px;height:16px}
+.badge-est{font-size:11px;background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:0 6px;margin-left:4px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin:4px 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:22px;height:18px;border-radius:5px;border:1px solid var(--line);display:inline-block;font-size:9px;font-weight:700;text-align:center;line-height:16px}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.month{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+.month header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.month header b{font-size:15px}.month header span{font-size:12px;color:var(--muted)}
+.dow,.cells{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow div{font-size:11px;color:var(--muted);text-align:center;font-weight:600}
+.day{position:relative;appearance:none;border:1px solid transparent;border-radius:9px;height:46px;padding:2px;font:inherit;color:var(--text);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.1;cursor:pointer}
+.day .n{font-size:14px;font-weight:600}.day .t{font-size:10px;font-weight:700;letter-spacing:.02em;min-height:11px}
+.day:disabled{cursor:default;color:inherit;opacity:1}
+.day.blank{visibility:hidden}
+.day.out{opacity:.4}
+.day.we{background:var(--we);color:var(--muted)}
+.day.ph{background:var(--ph-bg);color:var(--ph);border-color:var(--ph)}
+.day.work:hover{border-color:var(--accent);background:var(--accent-soft)}
+.day.al{background:var(--al-bg);color:var(--al);border-color:var(--al)}
+.day.lsl{background:repeating-linear-gradient(135deg,var(--lsl-bg) 0 5px,var(--lsl-bg2) 5px 10px);color:var(--lsl);border-color:var(--lsl)}
+.day.phl{box-shadow:inset 0 0 0 2px var(--ph)}
+.day.unf{border:2px dashed var(--bad);color:var(--bad);background:var(--bad-bg)}
+.day.sd:after{content:"";position:absolute;left:5px;right:5px;bottom:2px;height:3px;border-radius:2px;background:var(--muted);opacity:.55}
+.day .pd{position:absolute;top:1px;right:4px;font-size:10px;font-weight:700;color:var(--muted)}
+.day.today .n{text-decoration:underline}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto}
+.bar{display:flex;align-items:center;gap:8px;min-width:140px}
+.bar i{display:block;height:8px;border-radius:5px;background:var(--accent)}
+.bar i.lo{background:var(--warn)}.bar i.hi{background:var(--ok)}
+.muted{color:var(--muted)}.small{font-size:13px}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.res div{background:var(--bg);border-radius:10px;padding:8px 12px}.res b{display:block;font-size:20px;letter-spacing:-.02em}.res span{font-size:12px;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block}
+svg.chart text{font:11px Inter,system-ui,sans-serif;fill:var(--muted)}
+svg.chart text.lab{fill:var(--text);font-weight:600;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--text);padding:4px 10px;border-radius:99px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+ul.tight{margin:4px 0 0;padding-left:18px}ul.tight li{margin:2px 0}
+.test.pass{color:var(--ok)}.test.fail{color:var(--bad);font-weight:600}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;box-shadow:var(--shadow);max-width:90vw}
+#printSheet{display:none}
+footer{padding:20px 0 40px;color:var(--muted);font-size:12.5px}
+@media (max-width:600px){.day{height:42px}.stat .v{font-size:20px}.stats{grid-template-columns:repeat(2,1fr);position:static}}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;color:#000;font-size:11px}
+  body>.wrap,.toast{display:none!important}
+  #printSheet{display:block}
+  #printSheet h1{font-size:18px}#printSheet h2{font-size:13px;margin:10px 0 4px}
+  #printSheet table{font-size:10.5px}#printSheet th,#printSheet td{padding:3px 5px}
+  #printSheet svg.chart{max-height:60mm}
+  #printSheet svg.chart text{fill:#333}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Leave Planner</h1><p>South Australia · annual leave + long service leave · plan the most days off for the fewest leave days</p></div>
+    <div class="row">
+      <button class="btn" id="btnPrint">Print summary</button>
+      <button class="btn" id="btnCsvDays">CSV: days</button>
+      <button class="btn" id="btnCsvBlocks">CSV: blocks</button>
+      <button class="btn" id="btnXls">Excel</button>
+      <button class="btn" id="btnJsonOut" title="Back up your settings and plans">Backup</button>
+      <button class="btn" id="btnJsonIn">Restore</button>
+      <input type="file" id="fileIn" accept=".json" hidden>
+    </div>
+  </header>
+  <section class="stats" id="stats" aria-label="Plan totals"></section>
+  <div class="alerts" id="alerts" role="status"></div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" data-tab="plan">Plan</button>
+    <button class="tab" role="tab" data-tab="planner">Block planner</button>
+    <button class="tab" role="tab" data-tab="optimiser">Optimiser</button>
+    <button class="tab" role="tab" data-tab="scenarios">Scenarios</button>
+    <button class="tab" role="tab" data-tab="setup">Setup</button>
+    <button class="tab" role="tab" data-tab="holidays">Holidays</button>
+    <button class="tab" role="tab" data-tab="about">Assumptions &amp; tests</button>
+  </nav>
+
+  <main>
+  <section class="panel" id="tab-plan">
+    <div class="card">
+      <div class="row">
+        <h2>Calendar</h2><span class="muted small">Click a weekday to cycle: none → AL → LSL → none. Totals update instantly.</span>
+        <span class="spacer"></span>
+        <button class="btn small" id="btnSavePlan">Save as scenario</button>
+        <button class="btn small danger" id="btnClear">Clear my leave</button>
+        <button class="btn small" id="btnSample">Load the six-block example</button>
+      </div>
+      <div class="legend" aria-label="Legend">
+        <span><i class="sw" style="background:var(--al-bg);border-color:var(--al);color:var(--al)">AL</i> Annual leave</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--lsl-bg) 0 4px,var(--lsl-bg2) 4px 8px);border-color:var(--lsl);color:var(--lsl)">LSL</i> Long service leave (striped)</span>
+        <span><i class="sw" style="background:var(--ph-bg);border-color:var(--ph);color:var(--ph)">PH</i> Public holiday (free)</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--lsl-bg) 0 4px,var(--lsl-bg2) 4px 8px);box-shadow:inset 0 0 0 2px var(--ph);color:var(--ph)">PH</i> PH charged to LSL</span>
+        <span><i class="sw" style="background:var(--we)"></i> Weekend</span>
+        <span><i class="sw" style="position:relative"><span style="position:absolute;left:3px;right:3px;bottom:2px;height:3px;background:var(--muted);opacity:.6"></span></i> Shutdown</span>
+        <span><b style="color:var(--bad)">!</b> Shutdown day with no leave assigned</span>
+        <span><b>½</b> Part-day PH (still costs leave)</span>
+      </div>
+      <div class="months" id="months"></div>
+    </div>
+    <div class="card">
+      <h2>Balance timeline</h2>
+      <div class="legend" id="tlLegend"></div>
+      <div id="timeline"></div>
+    </div>
+    <div class="card">
+      <h2>Blocks of days off</h2>
+      <p class="muted small">Each block is a run of consecutive days off that includes leave. Return on leave = days off ÷ leave days used.</p>
+      <div class="tscroll" id="blocks"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="tab-planner">
+    <div class="grid2">
+      <div class="card">
+        <h2>Break explorer</h2>
+        <p class="muted small">Set your last working day and return date. Leave dates are derived (or edit them directly). The app suggests the best AL/LSL mix.</p>
+        <div class="fields" style="margin-top:10px">
+          <label class="f">Last working day<input type="date" id="pl-lwd"><small id="pl-lwd-h"></small></label>
+          <label class="f">Return to work<input type="date" id="pl-ret"><small id="pl-ret-h"></small></label>
+          <label class="f">Leave from<input type="date" id="pl-from"><small id="pl-from-h"></small></label>
+          <label class="f">Leave to<input type="date" id="pl-to"><small id="pl-to-h"></small></label>
+        </div>
+        <p class="small muted" style="margin-top:10px">Quick what-ifs</p>
+        <div class="chips" id="pl-chips"></div>
+      </div>
+      <div class="card" id="pl-result"></div>
+    </div>
+    <div class="card"><h2>Compare ways to fund this break</h2><div class="tscroll" id="pl-compare"></div></div>
+    <div class="card"><h2>Annual leave balance for the selected mix</h2><div class="legend" id="pl-legend"></div><div id="pl-chart"></div></div>
+  </section>
+
+  <section class="panel" id="tab-optimiser">
+    <div class="card">
+      <h2>Optimiser</h2>
+      <p class="muted small">Proposes blocks that maximise total days off from your leave budget: it bridges public holidays and weekends, funds holiday weeks with AL and holiday-free weeks with LSL, never lets AL go negative and keeps your reserve.</p>
+      <div class="fields" style="margin:10px 0">
+        <label class="f">Maximum block length (weeks)<input type="number" id="op-weeks" min="1" max="8" step="1"></label>
+        <label class="f">Minimum block length (leave days)<input type="number" id="op-min" min="1" max="20" step="1"></label>
+        <label class="f">Reserve to keep (hours)<input type="number" id="op-res" min="0" step="1"></label>
+      </div>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="op-all"> Use all LSL</label>
+        <label class="chk"><input type="checkbox" id="op-keep"> Keep leave already on my calendar (treat as booked)</label>
+        <span class="spacer"></span>
+        <button class="btn primary" id="op-run">Find the best plan</button>
+      </div>
+    </div>
+    <div id="op-out"></div>
+  </section>
+
+  <section class="panel" id="tab-scenarios">
+    <div class="card"><div class="row"><h2>Scenario comparison</h2><span class="spacer"></span><button class="btn small" id="sc-save">Save current plan</button></div>
+      <p class="muted small">Figures are recalculated from your current settings. Best value in each row is marked ★.</p>
+      <div class="tscroll" id="sc-table"></div></div>
+  </section>
+
+  <section class="panel" id="tab-setup">
+    <div class="card"><h2>Leave balances</h2><div class="fields" id="f-balances"></div></div>
+    <div class="card"><h2>Planning rules</h2><div class="fields" id="f-rules"></div><div style="display:grid;gap:8px;margin-top:12px" id="f-checks"></div></div>
+    <div class="card"><div class="row"><h2>Company shutdown</h2><span class="spacer"></span><button class="btn small" id="sd-add">Add period</button></div>
+      <p class="muted small">Weekdays in a shutdown are charged to your own leave (public holidays are not). Click a shutdown day on the calendar to switch it between AL, LSL or unfunded.</p>
+      <div id="sd-list"></div></div>
+    <div class="row"><button class="btn danger" id="btnReset">Reset everything to defaults</button></div>
+  </section>
+
+  <section class="panel" id="tab-holidays">
+    <div class="card"><div class="row"><h2>Public holidays</h2><span class="spacer"></span><button class="btn small" id="hol-add">Add holiday</button><button class="btn small danger" id="hol-reset">Restore defaults</button></div>
+      <p class="muted small">Verify against SafeWork SA before relying on these. Entries marked unverified (2028) are best guesses. Part-day holidays (from 7pm) do not reduce leave cost.</p>
+      <div class="tscroll" id="hol-table"></div></div>
+  </section>
+
+  <section class="panel" id="tab-about">
+    <div class="card"><h2>Assumptions</h2><div id="assumptions"></div></div>
+    <div class="card"><div class="row"><h2>Self-tests</h2><span class="spacer"></span><button class="btn small" id="btnTests">Run tests</button></div><div id="tests" class="small"></div></div>
+  </section>
+  </main>
+  <footer>Plans are estimates for personal use. Check entitlements against your award, contract and payroll. Data stays in this browser (localStorage); use Backup to move it between devices.</footer>
+</div>
+<div id="printSheet"></div>
+
+<script id="engine">
+/* ================= ENGINE (no DOM) ================= */
+const MS=86400000;
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DN=s=>{const p=s.split('-');return Math.round(Date.UTC(+p[0],+p[1]-1,+p[2])/MS)};
+const ISO=n=>new Date(n*MS).toISOString().slice(0,10);
+const DOW=n=>(((n+4)%7)+7)%7;
+const fmtN=n=>{const d=new Date(n*MS);return WD[DOW(n)]+' '+d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()};
+const fmt=s=>s?fmtN(DN(s)):'';
+const fmtS=n=>{const d=new Date(n*MS);return WD[DOW(n)]+' '+d.getUTCDate()+' '+MON[d.getUTCMonth()]};
+
+const DEFAULT_HOLIDAYS=[
+['2026-12-25','Christmas Day'],['2026-12-28','Proclamation Day (additional; 26 Dec is a Saturday)'],
+['2026-12-24','Christmas Eve (from 7pm)',1],['2026-12-31',"New Year's Eve (from 7pm)",1],
+['2027-01-01',"New Year's Day"],['2027-01-26','Australia Day'],['2027-03-08','Adelaide Cup Day'],
+['2027-03-26','Good Friday'],['2027-03-27','Easter Saturday'],['2027-03-28','Easter Sunday'],['2027-03-29','Easter Monday'],
+['2027-04-25','ANZAC Day (no substitute Monday)'],['2027-06-14',"King's Birthday"],['2027-10-04','Labour Day'],
+['2027-12-24','Christmas Eve (from 7pm)',1],['2027-12-25','Christmas Day'],['2027-12-26','Proclamation Day'],
+['2027-12-27','Christmas Day (additional)'],['2027-12-28','Proclamation Day (additional)'],['2027-12-31',"New Year's Eve (from 7pm)",1],
+['2028-01-01',"New Year's Day (2028, unverified)"],['2028-01-03',"New Year's Day additional (2028, unverified)"],['2028-01-26','Australia Day (2028, unverified)']
+].map(([date,name,part])=>({date,name,part:!!part}));
+
+const DEFAULTS=()=>({
+  alBalanceHours:188,alBalanceDate:'2026-10-27',alAccrualPerYear:160,hoursPerDay:8,
+  lslWeeks:13,lslAvailable:'2027-01-17',
+  shutdowns:[{start:'2026-12-23',end:'2027-01-11'},{start:'2027-12-23',end:'2028-01-11'}],
+  autofillShutdown:true,lastWorkingDay:'2026-12-18',returnDate:'2027-02-01',
+  reserveHours:88,windowStart:'2026-12-01',windowEnd:'2027-12-22',maxBlockWeeks:3,minBlockDays:5,
+  accrueOnAL:true,accrueOnLSL:true,lslPHCounts:true,useAllLSL:false,
+  holidays:DEFAULT_HOLIDAYS.map(h=>({...h}))
+});
+
+function phMap(S){const m={};S.holidays.forEach(h=>{m[h.date]=h});return m}
+function lslAvailEff(S){let n=DN(S.lslAvailable);const w=DOW(n);if(w===6)n+=2;else if(w===0)n+=1;return n}
+function inShutdown(S,n){return S.shutdowns.some(x=>x.start&&x.end&&n>=DN(x.start)&&n<=DN(x.end))}
+const lslEntitlementHrs=S=>S.lslWeeks*5*S.hoursPerDay;
+
+function compute(S,assign){
+  const start=DN(S.alBalanceDate),end=DN(S.windowEnd),N=Math.max(2,end-start+1);
+  const hpd=S.hoursPerDay,avail=lslAvailEff(S),ph=phMap(S),wStart=DN(S.windowStart);
+  const days=new Array(N);
+  for(let i=0;i<N;i++){
+    const n=start+i,iso=ISO(n),dow=DOW(n),hol=ph[iso]||null,full=!!(hol&&!hol.part),wk=dow>0&&dow<6;
+    const sd=inShutdown(S,n);let eff=null,unfunded=false;
+    if(wk&&!full){
+      const a=assign[iso];
+      if(a==='AL'||a==='LSL')eff=a;
+      else if(a==='NONE'){if(S.autofillShutdown&&sd)unfunded=true}
+      else if(S.autofillShutdown&&sd)eff='AL';
+    }
+    days[i]={n,iso,dow,wk,hol,full,part:!!(hol&&hol.part),sd,eff,phL:false,unfunded,badLsl:false,used:null,off:false,accrue:true,alBal:0,lslBal:0};
+  }
+  const prevWork=i=>{for(let j=i-1;j>=0&&j>=i-21;j--){const d=days[j];if(d.wk&&!d.full)return d}return null};
+  const nextWork=i=>{for(let j=i+1;j<N&&j<=i+21;j++){const d=days[j];if(d.wk&&!d.full)return d}return null};
+  for(let i=0;i<N;i++){const d=days[i];
+    if(d.wk&&d.full&&S.lslPHCounts){const p=prevWork(i),q=nextWork(i);if(p&&q&&p.eff==='LSL'&&q.eff==='LSL')d.phL=true}
+    if(d.eff==='LSL'&&d.n<avail)d.badLsl=true;
+  }
+  for(let i=0;i<N;i++){const d=days[i];
+    d.used=d.eff||(d.phL?'LSL':null);d.off=!d.wk||d.full||!!d.eff;
+    let pt=d.used;if(!pt&&d.off){const p=prevWork(i),q=nextWork(i);if(p&&q&&p.eff&&q.eff)pt=p.eff}
+    d.accrue=!(pt==='AL'&&!S.accrueOnAL)&&!(pt==='LSL'&&!S.accrueOnLSL);
+  }
+  const rate=S.alAccrualPerYear/364,E=lslEntitlementHrs(S);
+  let al=S.alBalanceHours,lslUsed=0,low={val:al,iso:days[0].iso};
+  days[0].alBal=al;days[0].lslBal=E;
+  for(let i=1;i<N;i++){const d=days[i];
+    if(d.accrue)al+=rate;
+    if(d.eff==='AL')al-=hpd;
+    if(d.used==='LSL')lslUsed+=hpd;
+    d.alBal=al;d.lslBal=E-lslUsed;
+    if(al<low.val){low={val:al,iso:d.iso}}
+  }
+  // blocks
+  const blocks=[];let i=0;
+  while(i<N){
+    if(!days[i].off){i++;continue}
+    let j=i;while(j+1<N&&days[j+1].off)j++;
+    let a=0,l=0,phw=0,lf=null,lt=null,sdFlag=false;const names=[];
+    for(let k=i;k<=j;k++){const d=days[k];
+      if(d.used==='AL')a++;else if(d.used==='LSL')l++;
+      if(d.used){if(!lf)lf=d.iso;lt=d.iso;if(d.sd&&d.eff)sdFlag=true}
+      if(d.full&&d.wk){phw++;names.push(d.hol.name.replace(/ \(.*\)/,'')+' ('+fmtS(d.n)+')')}
+    }
+    const L=a+l;
+    if(L>0)blocks.push({from:days[i].iso,to:days[j].iso,leaveFrom:lf,leaveTo:lt,off:j-i+1,leave:L,al:a,lsl:l,phWeekdays:phw,phNames:names,hasShutdown:sdFlag,ror:(j-i+1)/L,returnDate:j+1<N?days[j+1].iso:ISO(days[j].n+1)});
+    i=j+1;
+  }
+  const sum=(arr,f)=>arr.reduce((s,b)=>s+f(b),0);
+  const mk=arr=>{const lv=sum(arr,b=>b.leave),off=sum(arr,b=>b.off),a=sum(arr,b=>b.al),l=sum(arr,b=>b.lsl);
+    return{leaveDays:lv,alDays:a,lslDays:l,alHours:a*hpd,lslHours:l*hpd,daysOff:off,ror:lv?off/lv:0}};
+  const totals=mk(blocks),totalsEx=mk(blocks.filter(b=>!b.hasShutdown));
+  const warnings=[];
+  const neg=days.find(d=>d.alBal<-0.05);
+  if(neg)warnings.push({level:'bad',msg:`Annual leave goes negative from ${fmt(neg.iso)} (lowest ${low.val.toFixed(1)}h on ${fmt(low.iso)}). Move leave later, swap some AL to LSL, or shorten a block.`});
+  const closing=days[N-1].alBal;
+  if(closing<S.reserveHours-0.05)warnings.push({level:'warn',msg:`Annual leave on ${fmt(S.windowEnd)} is ${closing.toFixed(1)}h, which is ${(S.reserveHours-closing).toFixed(1)}h below your ${S.reserveHours}h reserve. (Flag only; nothing is blocked.)`});
+  const early=days.filter(d=>d.badLsl);
+  if(early.length)warnings.push({level:'bad',msg:`LSL is not available before ${fmtN(avail)}. ${early.length} day${early.length>1?'s':''} on the calendar are earlier (first: ${fmt(early[0].iso)}).`});
+  if(lslUsed>E+0.05)warnings.push({level:'bad',msg:`LSL used (${lslUsed.toFixed(1)}h) exceeds the ${E}h entitlement.`});
+  const unf=days.filter(d=>d.unfunded);
+  if(unf.length)warnings.push({level:'warn',msg:`${unf.length} shutdown weekday${unf.length>1?'s are':' is'} not funded by AL or LSL. Normally these are charged to your leave.`});
+  const phl=days.filter(d=>d.phL);
+  if(phl.length)warnings.push({level:'warn',msg:`${phl.length} public holiday${phl.length>1?'s fall':' falls'} inside LSL and ${phl.length>1?'are':'is'} charged to LSL (${phl.map(d=>fmtS(d.n)).join(', ')}). Put AL on the days either side to avoid wasting LSL.`});
+  if(blocks.filter(b=>b.lsl>0).length>1)warnings.push({level:'note',msg:'You are splitting LSL into more than one block. This needs your employer\'s agreement.'});
+  return{days,start,end,N,blocks,totals,totalsEx,warnings,low,closingAL:closing,lslLeftHrs:E-lslUsed,entitlement:E,avail,
+    alOn:iso=>{const n=DN(iso)-start;return n>=0&&n<N?days[n].alBal:null}};
+}
+
+function deriveLeave(S,lwd,ret){
+  const ph=phMap(S);const ok=n=>{const w=DOW(n),h=ph[ISO(n)];return w>0&&w<6&&!(h&&!h.part)};
+  let a=DN(lwd)+1;while(a<DN(ret)&&!ok(a))a++;
+  let b=DN(ret)-1;while(b>a&&!ok(b))b--;
+  return a<=b&&ok(a)&&ok(b)?{from:ISO(a),to:ISO(b)}:null;
+}
+function deriveBreak(S,from,to){
+  const ph=phMap(S);const ok=n=>{const w=DOW(n),h=ph[ISO(n)];return w>0&&w<6&&!(h&&!h.part)};
+  let a=DN(from)-1;while(!ok(a))a--;let b=DN(to)+1;while(!ok(b))b++;
+  return{lwd:ISO(a),ret:ISO(b)};
+}
+
+/* Best AL/LSL mix for a range. LSL wherever allowed, then AL on both sides of any public holiday that would sit inside LSL. */
+function mixList(S,fromN,toN,mode,lslBudgetDays){
+  const ph=phMap(S),avail=lslAvailEff(S),list=[];
+  for(let n=fromN;n<=toN;n++){const w=DOW(n),h=ph[ISO(n)];if(w>0&&w<6&&!(h&&!h.part))list.push({n,iso:ISO(n),type:'AL'})}
+  if(mode==='AL')return list;
+  let rem=lslBudgetDays;
+  for(const d of list){if(d.n>=avail&&rem>0){d.type='LSL';rem--}}
+  if(mode==='LSL')return list;
+  for(let n=fromN;n<=toN;n++){const w=DOW(n),h=ph[ISO(n)];
+    if(w>0&&w<6&&h&&!h.part){
+      let p=null,q=null;for(const d of list){if(d.n<n)p=d;else if(d.n>n&&!q)q=d}
+      if(p&&q&&p.type==='LSL'&&q.type==='LSL'){p.type='AL';q.type='AL'}
+    }}
+  return list;
+}
+function evalRange(S,fromIso,toIso,mode,base,lslRemainingDays){
+  const entDays=Math.round(lslEntitlementHrs(S)/S.hoursPerDay);
+  const list=mixList(S,DN(fromIso),DN(toIso),mode,lslRemainingDays==null?entDays:lslRemainingDays);
+  const assign={...(base||{})};list.forEach(d=>{assign[d.iso]=d.type});
+  const R=compute(S,assign);
+  const first=list.length?list[0].iso:fromIso;
+  const block=R.blocks.find(b=>first>=b.from&&first<=b.to)||null;
+  return{assign,R,block,list,alN:list.filter(d=>d.type==='AL').length,lslN:list.filter(d=>d.type==='LSL').length};
+}
+
+/* ---------- Optimiser: DP over candidate blocks ---------- */
+function optimise(S,opts){
+  const base=opts.keep?{...opts.keep}:{},hpd=S.hoursPerDay;
+  const R0=compute(S,base),N=R0.N,days=R0.days,avail=R0.avail;
+  const iS=Math.max(0,Math.max(DN(S.windowStart),R0.start+1)-R0.start);
+  const fixed=new Array(N).fill(false);
+  R0.blocks.forEach(b=>{for(let n=DN(b.from);n<=DN(b.to);n++)fixed[n-R0.start]=true});
+  const maxWd=S.maxBlockWeeks*5,minL=Math.max(1,S.minBlockDays);
+  const cands=[];
+  for(let s=iS;s<N;s++){
+    const ds=days[s];if(!(ds.wk&&!ds.full)||ds.eff||fixed[s])continue;
+    let wd=0,L=0,elig=0;
+    for(let e=s;e<N&&wd<maxWd;e++){
+      const de=days[e];if(de.eff||fixed[e])break;
+      if(de.wk)wd++;
+      if(de.wk&&!de.full){L++;if(de.n>=avail)elig++;
+        if(L>=minL){
+          let a=s,b=e;while(a-1>=0&&days[a-1].off)a--;while(b+1<N&&days[b+1].off)b++;
+          let clash=false;for(let k=a;k<=b;k++)if(days[k].eff||fixed[k]){clash=true;break}
+          if(!clash&&a>=0)cands.push({s,e,a,b,L,D:b-a+1,elig});
+        }}
+    }
+  }
+  const E=lslEntitlementHrs(S),lslUsed0=R0.days[N-1].lslBal,lslDaysBudget=Math.floor((lslUsed0+1e-6)/hpd);
+  const alRoom=Math.max(0,Math.floor((R0.closingAL-S.reserveHours)/hpd));
+  const Wc=Math.min(200,alRoom+lslDaysBudget+2);
+  const val=[],parC=[];
+  for(let t=0;t<=N;t++){val.push(new Int32Array(Wc+1).fill(-1));parC.push(new Int32Array(Wc+1).fill(-2))}
+  val[iS][0]=0;
+  const byStart={};cands.forEach((c,idx)=>{(byStart[c.a]=byStart[c.a]||[]).push(idx)});
+  const bonus=opts.useAll?1:0;
+  for(let t=iS;t<N;t++){
+    for(let w=0;w<=Wc;w++){if(val[t][w]>=0&&val[t][w]>val[t+1][w]){val[t+1][w]=val[t][w];parC[t+1][w]=-1}}
+    for(const ci of byStart[t]||[]){const c=cands[ci],sc=c.D*1000+bonus*c.elig,tt=c.b+1;
+      for(let w=0;w+c.L<=Wc;w++){if(val[t][w]>=0){const nv=val[t][w]+sc;if(nv>val[tt][w+c.L]){val[tt][w+c.L]=nv;parC[tt][w+c.L]=ci}}}}
+  }
+  const backtrack=w0=>{const out=[];let t=N,w=w0;
+    while(t>iS){const c=parC[t][w];if(c===-1)t--;else if(c>=0){const cd=cands[c];out.push(cd);w-=cd.L;t=cd.a}else break}
+    return out.reverse()};
+  const tried=new Set(),valid=[];
+  let bestW=-1,bestV=-1;
+  for(let W=Wc;W>=0;W--){
+    bestW=-1;bestV=-1;for(let w=0;w<=W;w++){if(val[N][w]>bestV){bestV=val[N][w];bestW=w}}
+    if(bestW<0||tried.has(bestW))continue;tried.add(bestW);
+    const chosen=backtrack(bestW);if(!chosen.length)continue;
+    const assign={...base};let rem=lslDaysBudget;
+    for(const c of chosen){const list=mixList(S,days[c.s].n,days[c.e].n,'best',rem);list.forEach(d=>{assign[d.iso]=d.type;if(d.type==='LSL')rem--})}
+    const R=compute(S,assign);
+    const okAL=!R.days.some(d=>d.alBal<-0.05)&&R.closingAL>=S.reserveHours-0.05&&R.lslLeftHrs>=-0.05&&!R.days.some(d=>d.badLsl);
+    if(okAL)valid.push({assign,R,w:bestW});
+  }
+  if(!valid.length)return{ok:false,msg:'No plan fits inside your leave budget and reserve. Lower the reserve or the minimum block length.'};
+  let pick=null,note='';
+  if(opts.useAll){
+    const full=valid.filter(v=>v.R.lslLeftHrs<=0.05);
+    if(full.length)pick=full.sort((a,b)=>b.R.totals.daysOff-a.R.totals.daysOff)[0];
+    else note='Could not use every LSL day within the block rules and your reserve; this is the best plan that fits.';
+  }
+  if(!pick)pick=valid.sort((a,b)=>b.R.totals.daysOff-a.R.totals.daysOff||a.R.totals.leaveDays-b.R.totals.leaveDays)[0];
+  return{ok:true,assign:pick.assign,R:pick.R,note,candidates:cands.length};
+}
+
+function explainBlock(S,b){
+  const out=[];const avail=lslAvailEff(S);
+  if(b.hasShutdown)out.push('Contains the company shutdown, which is charged to your own leave.');
+  if(b.phWeekdays)out.push(`Bridges ${b.phNames.join(', ')}, so ${b.phWeekdays===1?'that public holiday costs':'those public holidays cost'} no leave.`);
+  if(b.lsl>0&&b.al>0&&!b.hasShutdown)out.push(`${b.lsl} LSL day${b.lsl>1?'s':''} in holiday-free weeks; ${b.al} AL day${b.al>1?'s':''} where LSL is not available yet or the day sits beside a public holiday (so no public holiday is charged to LSL).`);
+  else if(b.lsl>0&&b.al===0)out.push('All LSL: no public holiday sits inside the block, so no LSL is wasted.');
+  else if(b.lsl===0&&!b.hasShutdown)out.push(DN(b.to)<avail?`Funded from annual leave because LSL is not available until ${fmtN(avail)}.`:'Funded from annual leave.');
+  out.push(`${b.off} days off for ${b.leave} leave days: ${b.ror.toFixed(2)} days off per leave day.`);
+  return out;
+}
+
+/* ---------- Self-tests (spec worked examples) ---------- */
+function runTests(){
+  const res=[];const T=(name,ok,detail)=>res.push({name,pass:!!ok,detail:detail||''});
+  const S=DEFAULTS();const near=(a,b,t)=>Math.abs(a-b)<=t;
+  let R=compute(S,{});
+  const b0=R.blocks[0];
+  T('Shutdown only: 11 leave days (88h)',R.totals.leaveDays===11&&R.totals.alHours===88,`${R.totals.leaveDays} days, ${R.totals.alHours}h`);
+  T('Shutdown only: days off Wed 23 Dec to Mon 11 Jan = 20 (the spec says 24, counting from Sat 19 Dec, but 21-22 Dec are working days under a 23 Dec shutdown)',b0.off===20,`${b0.off} days off`);
+  T('LSL date on a Sunday moves to Monday',ISO(lslAvailEff(S))==='2027-01-18');
+  T('AL balance end of Wed 16 Dec 2026 is about 210h',near(R.alOn('2026-12-16'),210,1),R.alOn('2026-12-16').toFixed(1)+'h');
+  let E=evalRange(S,'2026-12-16','2027-01-27','AL');
+  T('All AL 16 Dec to 27 Jan: 27 days (216h), about 12h left',E.R.totals.alDays-0>=27&&E.list.length===27&&near(E.R.alOn('2027-01-27'),12,2),`${E.list.length} days, ${E.R.alOn('2027-01-27').toFixed(1)}h left`);
+  E=evalRange(S,'2026-12-16','2027-01-29','best');
+  T('Best mix 16 Dec to 29 Jan: 22 AL, 7 LSL, 47 days off',E.alN===22&&E.lslN===7&&E.block.off===47,`AL ${E.alN}, LSL ${E.lslN}, off ${E.block.off}`);
+  T('Best mix puts AL on Mon 25 and Wed 27 Jan (Australia Day not charged to LSL)',E.assign['2027-01-25']==='AL'&&E.assign['2027-01-27']==='AL'&&E.R.totals.lslDays===7);
+  const d=deriveLeave(S,'2026-12-18','2027-02-01');
+  T('Last day 18 Dec, back 1 Feb derives leave Mon 21 Dec to Fri 29 Jan',d&&d.from==='2026-12-21'&&d.to==='2027-01-29',d?d.from+' to '+d.to:'none');
+  E=evalRange(S,d.from,d.to,'best');
+  T('18 Dec to 1 Feb: 26 leave days, 19 AL, 7 LSL, 44 days off, 1.69 return',E.block.leave===26&&E.block.al===19&&E.block.lsl===7&&E.block.off===44&&near(E.block.ror,1.69,0.005),`${E.block.leave}/${E.block.al}/${E.block.lsl}/${E.block.off}/${E.block.ror.toFixed(2)}`);
+  T('...about 79h AL left on return and 464h LSL left',near(E.R.alOn('2027-02-01'),79,1.5)&&near(E.R.lslLeftHrs,464,0.1),`${E.R.alOn('2027-02-01').toFixed(1)}h AL, ${E.R.lslLeftHrs}h LSL`);
+  T('...about 133h AL spendable after holding back 88h',near(E.R.closingAL-88,133,2),(E.R.closingAL-88).toFixed(1)+'h');
+  // PH inside LSL
+  R=compute(S,{'2027-01-25':'LSL','2027-01-27':'LSL'});
+  T('Public holiday between two LSL days is charged to LSL (3 days)',R.totals.lslDays===3,R.totals.lslDays+' days');
+  R=compute(S,{'2027-01-25':'AL','2027-01-27':'LSL'});
+  T('Public holiday between AL and LSL is not charged',R.totals.lslDays===1);
+  R=compute(S,{'2026-12-18':'AL'});
+  T('Part-day public holiday (24 Dec) still costs leave',compute(S,{}).days.find(x=>x.iso==='2026-12-24').eff==='AL');
+  R=compute(S,{'2027-01-12':'LSL'});
+  T('LSL before the available date raises a warning',R.warnings.some(w=>w.msg.includes('not available before')));
+  const S2=DEFAULTS();S2.alBalanceHours=0;R=compute(S2,{});
+  T('Negative AL balance raises a warning',R.warnings.some(w=>w.level==='bad'&&w.msg.includes('negative')));
+  // six blocks
+  const six=[['2027-01-18','2027-02-05'],['2027-03-09','2027-03-25'],['2027-05-10','2027-05-28'],['2027-06-07','2027-06-25'],['2027-08-09','2027-08-27'],['2027-09-20','2027-10-08']];
+  let asg={},rem=65;for(const [a,b] of six){const l=mixList(S,DN(a),DN(b),'best',rem);l.forEach(x=>{asg[x.iso]=x.type;if(x.type==='LSL')rem--})}
+  R=compute(S,asg);const t=R.totalsEx;
+  T('Six 3-week blocks: all 65 LSL days used, 20 AL days',t.lslDays===65&&t.alDays===20,`LSL ${t.lslDays}, AL ${t.alDays}`);
+  T('Six 3-week blocks: about 139 days off',t.daysOff===139,t.daysOff+' days off');
+  T('Six blocks plus shutdown stays above the 88h reserve at 22 Dec 2027',R.closingAL>=88&&!R.days.some(x=>x.alBal<0),R.closingAL.toFixed(1)+'h closing');
+  // optimiser
+  const O=optimise(DEFAULTS(),{useAll:true,keep:null});
+  T('Optimiser returns a valid plan (no negative AL, reserve kept)',O.ok&&!O.R.days.some(x=>x.alBal<-0.05)&&O.R.closingAL>=87.95,O.ok?`${O.R.totals.daysOff} days off, ${O.R.totals.leaveDays} leave days, ${O.R.closingAL.toFixed(1)}h closing`:O.msg);
+  T('Optimiser with "use all LSL" uses all LSL',O.ok&&O.R.lslLeftHrs<=0.05,O.ok?O.R.lslLeftHrs+'h LSL left':'');
+  return res;
+}
+</script>
+
+<script id="ui">
+/* ================= UI ================= */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f1=x=>(Math.round(x*10)/10).toFixed(1),f2=x=>x.toFixed(2),hh=x=>f1(x)+'h';
+const KEY='leavePlanner.v1';
+let ST=loadState(),R=null,OPT=null,lastChart='';
+function loadState(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&j.S)return{S:Object.assign(DEFAULTS(),j.S),assign:j.assign||{},scenarios:j.scenarios||[]}}catch(e){}return{S:DEFAULTS(),assign:{},scenarios:[]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+const rating=r=>r>=2?['Excellent','hi']:r>=1.7?['Great','hi']:r>=1.4?['Good','']:['Low','lo'];
+
+/* ----- tabs ----- */
+function showTab(id){if(!$('#tab-'+id))id='plan';$$('.panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));$$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===id));try{history.replaceState(null,'','#'+id)}catch(e){}}
+$$('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+/* ----- recalc + render ----- */
+function recalc(){R=compute(ST.S,ST.assign)}
+function renderAll(){recalc();renderStats();renderAlerts();renderCalendar();renderTimeline();renderBlocksTable('#blocks',R,true);renderPlanner();renderScenarios();renderPrint()}
+
+function renderStats(){
+  const t=R.totals,S=ST.S,ok=R.closingAL>=S.reserveHours-0.05;
+  const [rl]=rating(t.ror);
+  $('#stats').innerHTML=`
+  <div class="stat"><div class="k">Leave days used</div><div class="v">${t.leaveDays}</div><div class="s">${t.alDays} AL · ${t.lslDays} LSL</div></div>
+  <div class="stat"><div class="k">Days off</div><div class="v">${t.daysOff}</div><div class="s">${R.blocks.length} block${R.blocks.length===1?'':'s'} (${R.totalsEx.daysOff} excl. shutdown)</div></div>
+  <div class="stat"><div class="k">Return on leave</div><div class="v">${t.leaveDays?f2(t.ror):'–'}</div><div class="s">${t.leaveDays?rl+' · days off per leave day':'Pick some leave days'}</div></div>
+  <div class="stat"><div class="k">AL on ${fmtS(DN(S.windowEnd))}</div><div class="v">${hh(R.closingAL)}</div><div class="s"><span class="pill ${ok?'ok':'warn'}">${ok?'Reserve kept':'Below reserve by '+hh(S.reserveHours-R.closingAL)}</span> (${hh(S.reserveHours)} reserve)</div></div>
+  <div class="stat"><div class="k">Lowest AL balance</div><div class="v">${hh(R.low.val)}</div><div class="s">${R.low.val<-0.05?'<span class="pill bad">Negative</span> ':''}${fmtS(DN(R.low.iso))}</div></div>
+  <div class="stat"><div class="k">LSL remaining</div><div class="v">${hh(R.lslLeftHrs)}</div><div class="s">${f1(R.lslLeftHrs/S.hoursPerDay)} days of ${f1(R.entitlement/S.hoursPerDay)}</div></div>`;
+}
+function renderAlerts(){
+  const w=R.warnings;
+  $('#alerts').innerHTML=w.map(x=>`<div class="alert ${x.level}"><b>${x.level==='bad'?'Problem':x.level==='warn'?'Check':'Note'}:</b><span>${esc(x.msg)}</span></div>`).join('');
+}
+
+/* ----- calendar ----- */
+function dayInfo(n){
+  if(n>=R.start&&n<=R.end)return R.days[n-R.start];
+  const iso=ISO(n),dow=DOW(n),hol=phMap(ST.S)[iso]||null;
+  return{n,iso,dow,wk:dow>0&&dow<6,hol,full:!!(hol&&!hol.part),part:!!(hol&&hol.part),sd:inShutdown(ST.S,n),used:null,eff:null,phL:false,out:true};
+}
+function renderCalendar(){
+  const S=ST.S,ws=DN(S.windowStart),we=DN(S.windowEnd);
+  const d0=new Date(ws*MS);let y=d0.getUTCFullYear(),m=d0.getUTCMonth();
+  const dE=new Date(we*MS),yE=dE.getUTCFullYear(),mE=dE.getUTCMonth();
+  const today=Math.floor(Date.now()/MS);let html='';
+  while(y<yE||(y===yE&&m<=mE)){
+    const first=Math.round(Date.UTC(y,m,1)/MS),dim=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+    let lead=(DOW(first)+6)%7,cells='';
+    for(let i=0;i<lead;i++)cells+='<button class="day blank" disabled aria-hidden="true"></button>';
+    let al=0,lsl=0;
+    for(let dd=1;dd<=dim;dd++){
+      const n=first+dd-1,d=dayInfo(n);
+      const inWin=n>=ws&&n<=we&&n>R.start&&n<=R.end;
+      if(d.used==='AL')al++;else if(d.used==='LSL')lsl++;
+      let cls='day',tag='',desc='';
+      if(d.full){
+        if(d.phL){cls+=' lsl phl';tag='PH·LSL';desc='Public holiday charged to long service leave'}
+        else{cls+=' ph';tag='PH';desc='Public holiday: '+d.hol.name}
+      }else if(!d.wk){cls+=' we';desc='Weekend'}
+      else if(d.used==='AL'){cls+=' al';tag='AL';desc='Annual leave'}
+      else if(d.used==='LSL'){cls+=' lsl';tag='LSL';desc='Long service leave'+(d.badLsl?' (not yet available!)':'')}
+      else if(d.unfunded){cls+=' unf';tag='!';desc='Shutdown day with no leave assigned'}
+      else{cls+=' work';desc='Working day'}
+      if(d.badLsl){cls+=' unf'}
+      if(d.sd)cls+=' sd';
+      if(!inWin)cls+=' out';
+      if(n===today)cls+=' today';
+      const clickable=inWin&&d.wk&&!d.full;
+      const pd=d.part?`<i class="pd" title="${esc(d.hol.name)}">½</i>`:'';
+      cells+=`<button class="${cls}" ${clickable?`data-d="${d.iso}"`:'disabled'} title="${esc(fmt(d.iso)+' · '+desc+(d.sd?' · shutdown':''))}" aria-label="${esc(fmt(d.iso)+', '+desc)}">${pd}<span class="n">${dd}</span><span class="t">${tag}</span></button>`;
+    }
+    html+=`<div class="month"><header><b>${['January','February','March','April','May','June','July','August','September','October','November','December'][m]} ${y}</b><span>${al?al+' AL':''}${al&&lsl?' · ':''}${lsl?lsl+' LSL':''}</span></header><div class="dow">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cells">${cells}</div></div>`;
+    m++;if(m>11){m=0;y++}
+  }
+  $('#months').innerHTML=html;
+}
+$('#months').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-d]');if(!b)return;
+  const iso=b.dataset.d,n=DN(iso),S=ST.S,d=R.days[n-R.start],cur=d.eff,sd=S.autofillShutdown&&d.sd,avail=lslAvailEff(S);
+  let next;
+  if(sd){next=cur==='AL'?'LSL':cur==='LSL'?'NONE':'AL';if(next==='LSL'&&n<avail){toast('LSL is not available until '+fmtN(avail));next='NONE'}
+    if(next==='AL')delete ST.assign[iso];else ST.assign[iso]=next}
+  else{next=!cur?'AL':cur==='AL'?'LSL':null;if(next==='LSL'&&n<avail){toast('LSL is not available until '+fmtN(avail));next=null}
+    if(next)ST.assign[iso]=next;else delete ST.assign[iso]}
+  save();renderAll();
+});
+
+/* ----- chart ----- */
+function lineChart(o){
+  const W=820,H=o.h||300,m={l:50,r:18,t:14,b:30};
+  const all=o.series.flatMap(s=>s.pts.map(p=>p[1]));
+  let ymin=Math.min(0,...all),ymax=Math.max(...all,o.ref?o.ref.val:0);
+  const step=ymax-ymin>400?100:ymax-ymin>200?50:25;
+  ymax=Math.ceil(ymax/step)*step;ymin=Math.floor(ymin/step)*step;
+  const x=n=>m.l+(n-o.x0)/(o.x1-o.x0)*(W-m.l-m.r),y=v=>H-m.b-(v-ymin)/(ymax-ymin)*(H-m.t-m.b);
+  let g='';
+  for(let v=ymin;v<=ymax;v+=step)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${m.l-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`;
+  const d0=new Date(o.x0*MS);let yy=d0.getUTCFullYear(),mm=d0.getUTCMonth()+1;
+  for(;;){const n=Math.round(Date.UTC(yy,mm,1)/MS);if(n>o.x1)break;
+    g+=`<line x1="${x(n)}" x2="${x(n)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--line)" stroke-dasharray="2 4"/><text x="${x(n)}" y="${H-10}" text-anchor="middle">${MON[mm%12]}${mm%12===0?" '"+String((yy+(mm>11?1:0))%100):''}</text>`;
+    mm++;if(mm>11){mm=0;yy++}}
+  if(o.shade)g+=`<rect x="${x(o.shade[0])}" y="${m.t}" width="${Math.max(2,x(o.shade[1])-x(o.shade[0]))}" height="${H-m.t-m.b}" fill="var(--accent)" opacity=".12"/>`;
+  if(ymin<0)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--bad)" stroke-width="1.5"/>`;
+  if(o.ref)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(o.ref.val)}" y2="${y(o.ref.val)}" stroke="var(--muted)" stroke-dasharray="2 4" stroke-width="1.5"/><text x="${W-m.r}" y="${y(o.ref.val)-5}" text-anchor="end">${o.ref.label}</text>`;
+  (o.vlines||[]).forEach(v=>{g+=`<line x1="${x(v.n)}" x2="${x(v.n)}" y1="${m.t}" y2="${H-m.b}" stroke="var(--muted)" stroke-dasharray="5 3"/><text x="${x(v.n)+4}" y="${m.t+10}">${v.label}</text>`});
+  o.series.forEach(s=>{g+=`<path d="${s.pts.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[1]).toFixed(1)).join('')}" fill="none" stroke="${s.color}" stroke-width="2.5" ${s.dash?`stroke-dasharray="${s.dash}"`:''} stroke-linejoin="round"/>`});
+  (o.marks||[]).forEach(k=>{const anchor=k.n>(o.x0+o.x1)*0.8?'end':'start';g+=`<circle cx="${x(k.n)}" cy="${y(k.v)}" r="5" fill="${k.color||'var(--surface)'}" stroke="var(--text)" stroke-width="2"/><text class="lab" x="${x(k.n)+(anchor==='end'?-9:9)}" y="${y(k.v)-8}" text-anchor="${anchor}">${k.label}</text>`});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||'Balance chart')}">${g}</svg>`;
+}
+function legend(items){return items.map(i=>`<span><svg width="30" height="10"><line x1="0" x2="30" y1="5" y2="5" stroke="${i.color}" stroke-width="3" ${i.dash?`stroke-dasharray="${i.dash}"`:''}/></svg>${i.name}</span>`).join('')}
+function renderTimeline(){
+  const S=ST.S;
+  const al=R.days.map(d=>[d.n,d.alBal]),ls=R.days.map(d=>[d.n,d.lslBal]);
+  const marks=[{n:DN(R.low.iso),v:R.low.val,label:'Lowest '+hh(R.low.val)},{n:R.end,v:R.closingAL,label:'Reserve date '+hh(R.closingAL)}];
+  lastChart=lineChart({x0:R.start,x1:R.end,series:[{pts:al,color:'var(--al)'},{pts:ls,color:'var(--lsl)',dash:'7 4'}],ref:{val:S.reserveHours,label:'Reserve '+S.reserveHours+'h'},marks,vlines:[{n:R.avail,label:'LSL available'}],aria:'Annual leave and long service leave balances over time'});
+  $('#timeline').innerHTML=lastChart;
+  $('#tlLegend').innerHTML=legend([{name:'Annual leave (hours)',color:'var(--al)'},{name:'Long service leave (hours)',color:'var(--lsl)',dash:'7 4'},{name:'Reserve',color:'var(--muted)',dash:'2 4'}]);
+}
+
+/* ----- blocks table ----- */
+function renderBlocksTable(sel,Rx,withNotes){
+  if(!Rx.blocks.length){$(sel).innerHTML='<p class="muted">No leave on the calendar yet. Click some weekdays, or try the Block planner or Optimiser.</p>';return}
+  const rows=Rx.blocks.map(b=>{const [lab,cls]=rating(b.ror);
+    return `<tr><td><b>${fmt(b.leaveFrom)}</b><br><span class="muted small">to ${fmt(b.leaveTo)}</span></td><td class="num">${b.leave}</td><td class="num">${b.al} / ${b.lsl}</td><td class="num">${b.off}</td>
+    <td><div class="bar"><i class="${cls}" style="width:${Math.min(100,b.ror/3*100)}px"></i><b>${f2(b.ror)}</b> <span class="muted small">${lab}</span></div></td>
+    <td class="small">${b.hasShutdown?'<span class="pill warn">Shutdown</span> ':''}${b.phWeekdays?b.phWeekdays+' public holiday'+(b.phWeekdays>1?'s':'')+' inside':''}<br><span class="muted">Back ${fmt(b.returnDate)}</span></td></tr>`}).join('');
+  const t=Rx.totals;
+  $(sel).innerHTML=`<table><thead><tr><th>Leave</th><th class="num">Leave days</th><th class="num">AL / LSL days</th><th class="num">Days off</th><th>Return on leave</th><th>Notes</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th>Total</th><th class="num">${t.leaveDays}</th><th class="num">${t.alDays} / ${t.lslDays}</th><th class="num">${t.daysOff}</th><th>${f2(t.ror)}</th><th></th></tr></tfoot></table>`;
+}
+
+/* ----- plan toolbar ----- */
+$('#btnClear').onclick=()=>{ST.assign={};save();renderAll()};
+$('#btnSavePlan').onclick=()=>saveScenario('Plan '+(ST.scenarios.length+1),ST.assign);
+$('#btnSample').onclick=()=>{
+  const six=[['2027-01-18','2027-02-05'],['2027-03-09','2027-03-25'],['2027-05-10','2027-05-28'],['2027-06-07','2027-06-25'],['2027-08-09','2027-08-27'],['2027-09-20','2027-10-08']];
+  const asg={};let rem=Math.round(lslEntitlementHrs(ST.S)/ST.S.hoursPerDay);
+  for(const [a,b] of six){mixList(ST.S,DN(a),DN(b),'best',rem).forEach(x=>{asg[x.iso]=x.type;if(x.type==='LSL')rem--})}
+  ST.assign=asg;save();renderAll();toast('Loaded six 3-week blocks')};
+
+/* ----- block planner ----- */
+const PL={mode:'best'};
+function setBreak(lwd,ret){ST.S.lastWorkingDay=lwd;ST.S.returnDate=ret;save();renderPlanner()}
+function renderPlanner(){
+  const S=ST.S,dl=deriveLeave(S,S.lastWorkingDay,S.returnDate);
+  ['lwd:lastWorkingDay','ret:returnDate'].forEach(p=>{const [id,k]=p.split(':');if(document.activeElement!==$('#pl-'+id))$('#pl-'+id).value=S[k];$('#pl-'+id+'-h').textContent=fmt(S[k])});
+  if(!dl){$('#pl-result').innerHTML='<h2>Result</h2><p class="muted">The return date must be after the last working day, with at least one leave day in between.</p>';$('#pl-compare').innerHTML='';$('#pl-chart').innerHTML='';return}
+  if(document.activeElement!==$('#pl-from'))$('#pl-from').value=dl.from;if(document.activeElement!==$('#pl-to'))$('#pl-to').value=dl.to;
+  $('#pl-from-h').textContent=fmt(dl.from);$('#pl-to-h').textContent=fmt(dl.to);
+  const modes={best:'Best mix',AL:'All annual leave',LSL:'Max LSL (no holiday protection)'};
+  const ev={};for(const k in modes)ev[k]=evalRange(S,dl.from,dl.to,k);
+  const cur=ev[PL.mode],b=cur.block,Rx=cur.R,alStart=Rx.alOn(dl.from)==null?null:null;
+  const [lab]=rating(b?b.ror:0);
+  const pre=(Rx.alOn(ISO(DN(dl.from)-1))||0);
+  $('#pl-result').innerHTML=`<h2>${fmt(dl.from)} to ${fmt(dl.to)}</h2>
+   <p class="muted small">${PL.mode==='best'?'Suggested mix: LSL where it is available and no public holiday gets swallowed, AL everywhere else.':'Showing: '+modes[PL.mode]}</p>
+   <div class="res"><div><b>${cur.list.length}</b><span>Leave days</span></div><div><b>${cur.alN} / ${cur.lslN}</b><span>AL / LSL days</span></div><div><b>${hh(cur.alN*S.hoursPerDay)} / ${hh(cur.lslN*S.hoursPerDay)}</b><span>AL / LSL hours</span></div>
+   <div><b>${b?b.off:0}</b><span>Days off</span></div><div><b>${b?f2(b.ror):'–'}</b><span>Return on leave · ${lab}</span></div><div><b>${hh(Rx.alOn(b?b.returnDate:dl.to)??0)}</b><span>AL on return</span></div></div>
+   <p class="small">Days off run ${b?fmt(b.from)+' to '+fmt(b.to):''}; back at work ${b?fmt(b.returnDate):''}. After the break: <b>${hh(Rx.lslLeftHrs)}</b> LSL left, and <b>${hh(Rx.closingAL-S.reserveHours)}</b> of AL spendable on ${fmtS(DN(S.windowEnd))} after holding back ${S.reserveHours}h.</p>
+   ${Rx.warnings.filter(w=>w.level!=='note').map(w=>`<div class="alert ${w.level}" style="margin-top:6px"><span>${esc(w.msg)}</span></div>`).join('')}
+   <div class="row" style="margin-top:10px"><button class="btn primary" id="pl-apply">Add to calendar</button><button class="btn" id="pl-save">Save as scenario</button></div>`;
+  $('#pl-apply').onclick=()=>{cur.list.forEach(d=>{ST.assign[d.iso]=d.type});save();renderAll();toast('Added to calendar')};
+  $('#pl-save').onclick=()=>saveScenario('Break '+fmtS(DN(dl.from))+' to '+fmtS(DN(dl.to))+' ('+modes[PL.mode]+')',cur.assign);
+  const metric=(k)=>{const e=ev[k],bb=e.block;return`<td class="num">${e.list.length}</td><td class="num">${e.alN} / ${e.lslN}</td><td class="num">${bb?bb.off:0}</td><td class="num">${bb?f2(bb.ror):'–'}</td><td class="num">${hh(e.R.low.val)}</td><td class="num">${hh(e.R.lslLeftHrs)}</td><td class="num">${hh(e.R.closingAL)}</td><td>${e.R.warnings.some(w=>w.level==='bad')?'<span class="pill bad">Problem</span>':e.R.warnings.some(w=>w.level==='warn')?'<span class="pill warn">Check</span>':'<span class="pill ok">OK</span>'}</td>`};
+  $('#pl-compare').innerHTML=`<table><thead><tr><th>Funding</th><th class="num">Leave days</th><th class="num">AL / LSL</th><th class="num">Days off</th><th class="num">Return</th><th class="num">Lowest AL</th><th class="num">LSL left</th><th class="num">AL on ${fmtS(DN(S.windowEnd))}</th><th>Status</th></tr></thead><tbody>${Object.keys(modes).map(k=>`<tr><td><label class="chk"><input type="radio" name="plmode" value="${k}" ${PL.mode===k?'checked':''}> ${modes[k]}</label></td>${metric(k)}</tr>`).join('')}</tbody></table><p class="muted small" style="margin-top:8px">Totals include the company shutdown, which is charged to your leave regardless.</p>`;
+  $$('input[name=plmode]').forEach(r=>r.onchange=()=>{PL.mode=r.value;renderPlanner()});
+  const s=[{pts:Rx.days.map(d=>[d.n,d.alBal]),color:'var(--al)'}];
+  $('#pl-chart').innerHTML=lineChart({x0:Rx.start,x1:Rx.end,series:s,ref:{val:S.reserveHours,label:'Reserve '+S.reserveHours+'h'},shade:[DN(dl.from),DN(dl.to)],marks:[{n:DN(Rx.low.iso),v:Rx.low.val,label:'Lowest '+hh(Rx.low.val)},{n:Rx.end,v:Rx.closingAL,label:hh(Rx.closingAL)}],aria:'Annual leave balance with this break'});
+  $('#pl-legend').innerHTML=legend([{name:'Annual leave (hours)',color:'var(--al)'},{name:'Reserve',color:'var(--muted)',dash:'2 4'}])+'<span>Shaded = this break</span>';
+}
+function plOnBreak(){const S=ST.S;S.lastWorkingDay=$('#pl-lwd').value||S.lastWorkingDay;S.returnDate=$('#pl-ret').value||S.returnDate;save();renderPlanner()}
+$('#pl-lwd').oninput=plOnBreak;$('#pl-ret').oninput=plOnBreak;
+function plOnLeave(){const f=$('#pl-from').value,t=$('#pl-to').value;if(!f||!t||t<f)return;const b=deriveBreak(ST.S,f,t);ST.S.lastWorkingDay=b.lwd;ST.S.returnDate=b.ret;save();renderPlanner()}
+$('#pl-from').oninput=plOnLeave;$('#pl-to').oninput=plOnLeave;
+$('#pl-chips').innerHTML=[['Leave 16 Dec to 27 Jan','L','2026-12-16','2027-01-27'],['Leave 16 Dec to 29 Jan','L','2026-12-16','2027-01-29'],['Last day 18 Dec, back 1 Feb','B','2026-12-18','2027-02-01'],['Shutdown only','B','2026-12-22','2027-01-12'],['Last day 18 Dec, back 8 Feb','B','2026-12-18','2027-02-08']].map(c=>`<button class="chip" data-k="${c[1]}" data-a="${c[2]}" data-b="${c[3]}">${c[0]}</button>`).join('');
+$('#pl-chips').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;if(c.dataset.k==='B')setBreak(c.dataset.a,c.dataset.b);else{const b=deriveBreak(ST.S,c.dataset.a,c.dataset.b);setBreak(b.lwd,b.ret)}};
+
+/* ----- optimiser ----- */
+function syncOpt(){const S=ST.S;$('#op-weeks').value=S.maxBlockWeeks;$('#op-min').value=S.minBlockDays;$('#op-res').value=S.reserveHours;$('#op-all').checked=S.useAllLSL}
+['op-weeks:maxBlockWeeks','op-min:minBlockDays','op-res:reserveHours'].forEach(p=>{const [id,k]=p.split(':');$('#'+id).oninput=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){ST.S[k]=v;save();renderAll();renderSetup()}}});
+$('#op-all').onchange=e=>{ST.S.useAllLSL=e.target.checked;save()};
+$('#op-run').onclick=()=>{
+  $('#op-out').innerHTML='<div class="card"><p>Working…</p></div>';
+  setTimeout(()=>{
+    const t0=performance.now();
+    OPT=optimise(ST.S,{useAll:ST.S.useAllLSL,keep:$('#op-keep').checked?ST.assign:null});
+    OPT.ms=Math.round(performance.now()-t0);renderOpt();
+  },30);
+};
+function renderOpt(){
+  const S=ST.S;if(!OPT){return}
+  if(!OPT.ok){$('#op-out').innerHTML=`<div class="card"><div class="alert warn"><span>${esc(OPT.msg)}</span></div></div>`;return}
+  const Rx=OPT.R,t=Rx.totals;
+  const blocks=Rx.blocks.map(b=>{const [lab]=rating(b.ror);return`<div class="card" style="margin:0 0 10px"><div class="row"><h3>${fmt(b.leaveFrom)} to ${fmt(b.leaveTo)}</h3><span class="spacer"></span><span class="pill ok">${f2(b.ror)} · ${lab}</span></div>
+    <div class="small muted">${b.leave} leave days (${b.al} AL, ${b.lsl} LSL) · ${b.off} days off · back ${fmt(b.returnDate)}</div><ul class="tight small">${explainBlock(S,b).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`}).join('');
+  $('#op-out').innerHTML=`<div class="card"><h2>Proposed plan</h2>
+   <div class="res"><div><b>${t.daysOff}</b><span>Days off (${Rx.totalsEx.daysOff} excl. shutdown)</span></div><div><b>${t.leaveDays}</b><span>Leave days (${t.alDays} AL, ${t.lslDays} LSL)</span></div><div><b>${f2(t.ror)}</b><span>Return on leave</span></div><div><b>${hh(Rx.closingAL)}</b><span>AL on ${fmtS(DN(S.windowEnd))} (reserve ${hh(S.reserveHours)})</span></div><div><b>${hh(Rx.lslLeftHrs)}</b><span>LSL left</span></div><div><b>${hh(Rx.low.val)}</b><span>Lowest AL</span></div></div>
+   ${OPT.note?`<div class="alert warn"><span>${esc(OPT.note)}</span></div>`:''}
+   ${Rx.warnings.filter(w=>w.level==='note').map(w=>`<div class="alert note" style="margin-top:6px"><span>${esc(w.msg)}</span></div>`).join('')}
+   <div class="row" style="margin:10px 0"><button class="btn primary" id="op-apply">Apply to calendar</button><button class="btn" id="op-save">Save as scenario</button><span class="muted small">Searched ${OPT.candidates} candidate blocks in ${OPT.ms}ms</span></div>
+   ${blocks}
+   <h3 style="margin-top:12px">Annual leave balance</h3>${lineChart({x0:Rx.start,x1:Rx.end,series:[{pts:Rx.days.map(d=>[d.n,d.alBal]),color:'var(--al)'},{pts:Rx.days.map(d=>[d.n,d.lslBal]),color:'var(--lsl)',dash:'7 4'}],ref:{val:S.reserveHours,label:'Reserve '+S.reserveHours+'h'},marks:[{n:DN(Rx.low.iso),v:Rx.low.val,label:'Lowest '+hh(Rx.low.val)},{n:Rx.end,v:Rx.closingAL,label:hh(Rx.closingAL)}],aria:'Optimised plan balances'})}</div>`;
+  $('#op-apply').onclick=()=>{ST.assign=OPT.assign;save();renderAll();showTab('plan');toast('Applied to calendar')};
+  $('#op-save').onclick=()=>saveScenario('Optimiser plan',OPT.assign);
+}
+
+/* ----- scenarios ----- */
+function saveScenario(name,assign){const n=prompt('Name this scenario',name);if(n===null)return;ST.scenarios.push({id:Date.now(),name:n||name,assign:{...assign}});save();renderScenarios();toast('Scenario saved')}
+function renderScenarios(){
+  const S=ST.S;
+  const cols=[{name:'Current plan',assign:ST.assign,cur:true},...ST.scenarios].map(c=>({...c,R:compute(S,c.assign)}));
+  const rows=[
+    ['Leave days',c=>c.R.totals.leaveDays,'min'],['AL hours used',c=>c.R.totals.alHours,null],['LSL hours used',c=>c.R.totals.lslHours,null],
+    ['Days off',c=>c.R.totals.daysOff,'max'],['Return on leave',c=>c.R.totals.ror,'max',f2],
+    ['AL on '+fmtS(DN(S.windowEnd)),c=>c.R.closingAL,'max',hh],['Above reserve by',c=>c.R.closingAL-S.reserveHours,'max',hh],
+    ['Lowest AL balance',c=>c.R.low.val,'max',hh],['LSL left',c=>c.R.lslLeftHrs,null,hh],['Blocks',c=>c.R.blocks.length,null],['Problems / checks',c=>c.R.warnings.filter(w=>w.level!=='note').length,'min']];
+  const best=rows.map(r=>{if(!r[2])return null;const v=cols.map(c=>r[1](c));return r[2]==='max'?Math.max(...v):Math.min(...v)});
+  $('#sc-table').innerHTML=`<table><thead><tr><th></th>${cols.map((c,i)=>`<th class="num">${esc(c.name)}${c.cur?'':`<br><button class="btn small" data-load="${i-1}">Load</button> <button class="btn small danger" data-del="${i-1}">Delete</button>`}</th>`).join('')}</tr></thead><tbody>${rows.map((r,ri)=>`<tr><td>${r[0]}</td>${cols.map(c=>{const v=r[1](c),s=(r[3]||(x=>x))(v);const star=best[ri]!==null&&Math.abs(v-best[ri])<1e-9&&cols.length>1?' ★':'';return`<td class="num">${s}${star}</td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+}
+$('#sc-save').onclick=()=>saveScenario('Plan '+(ST.scenarios.length+1),ST.assign);
+$('#sc-table').onclick=e=>{const l=e.target.closest('[data-load]'),d=e.target.closest('[data-del]');
+  if(l){ST.assign={...ST.scenarios[+l.dataset.load].assign};save();renderAll();showTab('plan');toast('Loaded onto the calendar')}
+  if(d&&confirm('Delete this scenario?')){ST.scenarios.splice(+d.dataset.del,1);save();renderScenarios()}};
+
+/* ----- setup ----- */
+function fld(k,label,type,o={}){const v=ST.S[k];return`<label class="f">${label}${o.est?'<span class="badge-est">estimate</span>':''}<input type="${type}" data-k="${k}" value="${v}" ${o.step?`step="${o.step}"`:''} ${o.min!=null?`min="${o.min}"`:''}>${o.hint?`<small>${o.hint}</small>`:''}${type==='date'?`<small data-hint="${k}">${fmt(v)}</small>`:''}</label>`}
+function renderSetup(){
+  const S=ST.S;
+  $('#f-balances').innerHTML=fld('alBalanceHours','Annual leave balance (hours)','number',{step:0.1,min:0})+fld('alBalanceDate','Balance applies on','date')+
+   fld('alAccrualPerYear','AL accrual (hours per year)','number',{step:0.1,min:0,est:1,hint:'160 = 4 weeks of 40h · 152 = 4 weeks of 38h'})+fld('hoursPerDay','Hours per working day','number',{step:0.25,min:1})+
+   fld('lslWeeks','LSL entitlement (weeks)','number',{step:0.1,min:0,est:1,hint:'SA: 13 weeks after 10 years, plus 1.3 per extra year'})+fld('lslAvailable','LSL available from','date');
+  $('#f-rules').innerHTML=fld('windowStart','Planning window starts','date')+fld('windowEnd','Planning window ends (reserve date)','date',{hint:'Reserve is measured on this date'})+fld('reserveHours','Reserve (hours of AL to hold back)','number',{step:1,min:0,hint:'88h covers the next shutdown'})+fld('maxBlockWeeks','Maximum block length (weeks)','number',{step:1,min:1,hint:'3 weeks ≈ 15 leave days'})+fld('minBlockDays','Minimum block (optimiser, leave days)','number',{step:1,min:1});
+  const chk=(k,t)=>`<label class="chk"><input type="checkbox" data-c="${k}" ${S[k]?'checked':''}><span>${t}</span></label>`;
+  $('#f-checks').innerHTML=chk('accrueOnAL','Annual leave keeps accruing while you are on annual leave')+chk('accrueOnLSL','Annual leave keeps accruing while you are on long service leave')+chk('lslPHCounts','Public holidays that fall inside LSL are counted as LSL days (SA rule: LSL is wasted across a holiday)')+chk('autofillShutdown','Charge shutdown weekdays to annual leave automatically');
+  $('#sd-list').innerHTML=S.shutdowns.map((s,i)=>`<div class="row" style="margin:6px 0"><label class="f" style="width:170px">Start<input type="date" data-sd="${i}" data-f="start" value="${s.start}"></label><label class="f" style="width:170px">End<input type="date" data-sd="${i}" data-f="end" value="${s.end}"></label><button class="btn small danger" data-sdel="${i}" style="margin-top:18px">Remove</button></div>`).join('')||'<p class="muted">No shutdown periods.</p>';
+}
+function onSetting(e){
+  const t=e.target;
+  if(t.dataset.k){let v=t.type==='number'?parseFloat(t.value):t.value;if(t.type==='number'&&isNaN(v))return;if(t.type==='date'&&!v)return;ST.S[t.dataset.k]=v;const h=document.querySelector(`[data-hint="${t.dataset.k}"]`);if(h)h.textContent=fmt(v);}
+  else if(t.dataset.c)ST.S[t.dataset.c]=t.checked;
+  else if(t.dataset.sd!=null){if(!t.value)return;ST.S.shutdowns[+t.dataset.sd][t.dataset.f]=t.value}
+  else return;
+  save();renderAll();syncOpt();
+}
+$('#tab-setup').addEventListener('input',onSetting);$('#tab-setup').addEventListener('change',onSetting);
+$('#tab-setup').addEventListener('click',e=>{const d=e.target.closest('[data-sdel]');if(d){ST.S.shutdowns.splice(+d.dataset.sdel,1);save();renderSetup();renderAll()}});
+$('#sd-add').onclick=()=>{ST.S.shutdowns.push({start:'2028-12-23',end:'2029-01-11'});save();renderSetup()};
+$('#btnReset').onclick=()=>{if(confirm('Reset all settings, plans and scenarios to the defaults?')){ST={S:DEFAULTS(),assign:{},scenarios:[]};save();init()}};
+
+/* ----- holidays ----- */
+function renderHolidays(){
+  const hs=[...ST.S.holidays].map((h,i)=>({...h,i})).sort((a,b)=>a.date<b.date?-1:1);
+  $('#hol-table').innerHTML=`<table><thead><tr><th>Date</th><th>Day</th><th>Name</th><th>Part-day (from 7pm)</th><th></th></tr></thead><tbody>${hs.map(h=>`<tr><td><input type="date" data-h="${h.i}" data-f="date" value="${h.date}"></td><td>${WD[DOW(DN(h.date))]}</td><td><input type="text" data-h="${h.i}" data-f="name" value="${esc(h.name)}"></td><td><input type="checkbox" data-h="${h.i}" data-f="part" ${h.part?'checked':''}></td><td><button class="btn small danger" data-hdel="${h.i}">Delete</button></td></tr>`).join('')}</tbody></table>`;
+}
+$('#hol-table').addEventListener('change',e=>{const t=e.target;if(t.dataset.h==null)return;const h=ST.S.holidays[+t.dataset.h];if(t.dataset.f==='part')h.part=t.checked;else{if(t.dataset.f==='date'&&!t.value)return;h[t.dataset.f]=t.value}save();renderHolidays();renderAll()});
+$('#hol-table').addEventListener('click',e=>{const d=e.target.closest('[data-hdel]');if(d){ST.S.holidays.splice(+d.dataset.hdel,1);save();renderHolidays();renderAll()}});
+$('#hol-add').onclick=()=>{ST.S.holidays.push({date:'2028-01-01',name:'New holiday',part:false});save();renderHolidays()};
+$('#hol-reset').onclick=()=>{if(confirm('Replace the holiday list with the defaults?')){ST.S.holidays=DEFAULT_HOLIDAYS.map(h=>({...h}));save();renderHolidays();renderAll()}};
+
+/* ----- assumptions + tests ----- */
+$('#assumptions').innerHTML=`<ul class="tight">
+<li><b>Leave day</b> = a weekday that is not a full public holiday. Weekday public holidays never cost annual leave. Part-day holidays (Christmas Eve, New Year's Eve from 7pm) still cost a full leave day.</li>
+<li><b>Days off</b> = the whole run of consecutive weekends, public holidays and leave days around your leave. <b>Return on leave</b> = days off ÷ leave days used.</li>
+<li><b>LSL and public holidays:</b> a weekday public holiday is charged as an LSL day when the nearest leave days on both sides are LSL. A holiday between AL and LSL, or between two AL days, is free. This follows the SA rule in your brief; confirm against SafeWork SA or your award (you can switch it off in Setup).</li>
+<li>The <b>best mix</b> uses LSL on every eligible day, then switches the leave day on each side of any holiday that would sit inside LSL to AL. That is why 25 and 27 Jan are AL when Australia Day is the 26th.</li>
+<li><b>LSL entitlement</b> = weeks × 5 × hours per day (13 × 5 × 8 = 520h) <span class="badge-est">estimate</span> and cannot be used before the available date (a weekend date moves to the next Monday).</li>
+<li><b>Annual leave accrual</b> = hours per year ÷ 364 per day, applied daily including weekends <span class="badge-est">estimate</span>. Accrual during AL and LSL is on by default and can be switched off. The balance applies at the end of the balance date, so leave on or before that date is not charged again.</li>
+<li><b>Shutdown</b> weekdays (non-public-holiday) are charged to annual leave by default; click one on the calendar to switch it to LSL or unfunded.</li>
+<li><b>Reserve</b> is measured on the planning window end date. Going below it shows a warning but never blocks you. The optimiser does keep it.</li>
+<li>Splitting LSL into more than one block needs <b>employer agreement</b>; a note appears when you do.</li>
+<li>Public holidays for 2026 to 2027 come from your brief; 2028 entries are unverified. Edit them in the Holidays tab.</li>
+<li>The optimiser maximises total days off within the AL and LSL you can afford, picking non-overlapping blocks of between the minimum and maximum length. It is exact for the rules above, but it treats your current plan as empty unless you tick "keep leave already on my calendar".</li></ul>`;
+$('#btnTests').onclick=()=>{const r=runTests();$('#tests').innerHTML=`<p><b>${r.filter(x=>x.pass).length} of ${r.length} passed</b></p>`+r.map(x=>`<div class="test ${x.pass?'pass':'fail'}">${x.pass?'✓':'✗'} ${esc(x.name)} <span class="muted">${esc(x.detail)}</span></div>`).join('')};
+
+/* ----- export / print ----- */
+function dl(name,mime,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const csvCell=v=>'"'+String(v).replace(/"/g,'""')+'"';
+function daysRows(){return R.days.map(d=>[fmt(d.iso),d.full?(d.phL?'Public holiday (charged to LSL)':'Public holiday: '+d.hol.name):!d.wk?'Weekend':d.used||(d.part?'Working (part-day PH)':d.unfunded?'Shutdown, unfunded':'Working'),d.used==='AL'?ST.S.hoursPerDay:0,d.used==='LSL'?ST.S.hoursPerDay:0,f1(d.alBal),f1(d.lslBal)])}
+function blockRows(){return R.blocks.map(b=>[fmt(b.leaveFrom),fmt(b.leaveTo),b.leave,b.al,b.lsl,b.off,f2(b.ror),fmt(b.returnDate)])}
+const DH=['Date','Type','AL hours charged','LSL hours charged','AL balance (h)','LSL balance (h)'],BH=['Leave from','Leave to','Leave days','AL days','LSL days','Days off','Return on leave','Back at work'];
+const toCsv=(h,r)=>[h,...r].map(x=>x.map(csvCell).join(',')).join('\r\n');
+$('#btnCsvDays').onclick=()=>dl('leave-days.csv','text/csv',toCsv(DH,daysRows()));
+$('#btnCsvBlocks').onclick=()=>dl('leave-blocks.csv','text/csv',toCsv(BH,blockRows()));
+$('#btnXls').onclick=()=>{const tb=(h,r)=>`<table border="1"><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${r.map(x=>`<tr>${x.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>`;
+  dl('leave-plan.xls','application/vnd.ms-excel',`<html><head><meta charset="utf-8"></head><body><h3>Blocks</h3>${tb(BH,blockRows())}<br><h3>Days</h3>${tb(DH,daysRows())}</body></html>`)};
+$('#btnJsonOut').onclick=()=>dl('leave-planner-backup.json','application/json',JSON.stringify(ST,null,2));
+$('#btnJsonIn').onclick=()=>$('#fileIn').click();
+$('#fileIn').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.S)throw 0;ST={S:Object.assign(DEFAULTS(),j.S),assign:j.assign||{},scenarios:j.scenarios||[]};save();init();toast('Backup restored')}catch(x){toast('That file is not a Leave Planner backup')}};r.readAsText(f);e.target.value=''};
+function renderPrint(){
+  const S=ST.S,t=R.totals;
+  $('#printSheet').innerHTML=`<h1>Leave plan summary</h1><p>Printed ${new Date().toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'})} · planning window ${fmt(S.windowStart)} to ${fmt(S.windowEnd)}</p>
+  <h2>Inputs</h2><table><tr><td>AL balance</td><td>${hh(S.alBalanceHours)} on ${fmt(S.alBalanceDate)}</td><td>AL accrual</td><td>${S.alAccrualPerYear}h per year</td></tr>
+  <tr><td>LSL entitlement</td><td>${S.lslWeeks} weeks (${R.entitlement}h) from ${fmt(S.lslAvailable)}</td><td>Hours per day / reserve</td><td>${S.hoursPerDay}h / ${S.reserveHours}h</td></tr></table>
+  <h2>Totals</h2><table><tr><td>Leave days</td><td>${t.leaveDays} (${t.alDays} AL, ${t.lslDays} LSL)</td><td>Days off</td><td>${t.daysOff}</td><td>Return on leave</td><td>${f2(t.ror)}</td></tr>
+  <tr><td>AL on ${fmt(S.windowEnd)}</td><td>${hh(R.closingAL)}</td><td>Lowest AL</td><td>${hh(R.low.val)} (${fmtS(DN(R.low.iso))})</td><td>LSL left</td><td>${hh(R.lslLeftHrs)}</td></tr></table>
+  <h2>Blocks</h2>${R.blocks.length?`<table><tr><th>Leave</th><th>Leave days</th><th>AL / LSL</th><th>Days off</th><th>Return</th><th>Back</th></tr>${R.blocks.map(b=>`<tr><td>${fmt(b.leaveFrom)} to ${fmt(b.leaveTo)}</td><td>${b.leave}</td><td>${b.al} / ${b.lsl}</td><td>${b.off}</td><td>${f2(b.ror)}</td><td>${fmt(b.returnDate)}</td></tr>`).join('')}</table>`:'<p>No leave planned.</p>'}
+  ${R.warnings.length?`<h2>Warnings</h2><ul>${R.warnings.map(w=>`<li>${esc(w.msg)}</li>`).join('')}</ul>`:''}
+  <h2>Balances</h2>${lastChart}<p style="font-size:10px">Blue = annual leave, dashed orange = long service leave. Estimates only; verify entitlements and public holidays (SafeWork SA).</p>`;
+}
+$('#btnPrint').onclick=()=>{renderPrint();window.print()};
+
+/* ----- init ----- */
+function init(){renderSetup();renderHolidays();syncOpt();renderAll();if(OPT)renderOpt();showTab((location.hash||'#plan').slice(1))}
+init();
+</script>
+</body>
+</html>
