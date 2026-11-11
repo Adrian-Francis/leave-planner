@@ -107,6 +107,17 @@ svg.chart text.lab{fill:var(--text);font-weight:600;paint-order:stroke;stroke:va
 ul.tight{margin:4px 0 0;padding-left:18px}ul.tight li{margin:2px 0}
 .test.pass{color:var(--ok)}.test.fail{color:var(--bad);font-weight:600}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:50;box-shadow:var(--shadow);max-width:90vw}
+.balgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.baltbl td{padding:5px 0;border-bottom:1px dashed var(--line)}.baltbl td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.baltbl tr.tot td{font-weight:700;border-bottom:1px solid var(--line)}
+.baltbl tr.key td{font-weight:700;font-size:16px;border-bottom:0;padding-top:8px}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--we);margin:8px 0 4px;border:1px solid var(--line)}
+.stack i{display:block;height:100%}
+.stack i.u{background:var(--al)}.stack i.r{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px);opacity:.7}.stack i.f{background:var(--ok)}.stack i.l{background:var(--lsl)}
+.stackleg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.readout{position:sticky;bottom:8px;z-index:15;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:8px 14px;margin:0 0 14px;box-shadow:var(--shadow);font-size:14px}
+.mfoot{margin-top:8px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}.mfoot b{color:var(--text)}
 #printSheet{display:none}
 footer{padding:20px 0 40px;color:var(--muted);font-size:12.5px}
 @media (max-width:600px){.day{height:42px}.stat .v{font-size:20px}.stats{grid-template-columns:repeat(2,1fr);position:static}}
@@ -150,6 +161,8 @@ footer{padding:20px 0 40px;color:var(--muted);font-size:12.5px}
 
   <main>
   <section class="panel" id="tab-plan">
+    <div class="card" id="balances" aria-label="Leave balances"></div>
+    <div class="readout" id="readout" role="status" aria-live="polite"></div>
     <div class="card">
       <div class="row">
         <h2>Calendar</h2><span class="muted small">Click a weekday to cycle: none → AL → LSL → none. Totals update instantly.</span>
@@ -157,6 +170,7 @@ footer{padding:20px 0 40px;color:var(--muted);font-size:12.5px}
         <button class="btn small" id="btnSavePlan">Save as scenario</button>
         <button class="btn small danger" id="btnClear">Clear my leave</button>
         <button class="btn small" id="btnSample">Load the six-block example</button>
+        <label class="chk small"><input type="checkbox" id="chkBal"> Show AL balance on each AL day</label>
       </div>
       <div class="legend" aria-label="Legend">
         <span><i class="sw" style="background:var(--al-bg);border-color:var(--al);color:var(--al)">AL</i> Annual leave</span>
@@ -280,7 +294,7 @@ const DEFAULTS=()=>({
   shutdowns:[{start:'2026-12-23',end:'2027-01-11'},{start:'2027-12-23',end:'2028-01-11'}],
   autofillShutdown:true,lastWorkingDay:'2026-12-18',returnDate:'2027-02-01',
   reserveHours:88,windowStart:'2026-12-01',windowEnd:'2027-12-22',maxBlockWeeks:3,minBlockDays:5,
-  accrueOnAL:true,accrueOnLSL:true,lslPHCounts:true,useAllLSL:false,
+  accrueOnAL:true,accrueOnLSL:true,lslPHCounts:true,useAllLSL:false,showBal:true,
   holidays:DEFAULT_HOLIDAYS.map(h=>({...h}))
 });
 
@@ -536,7 +550,7 @@ $$('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
 
 /* ----- recalc + render ----- */
 function recalc(){R=compute(ST.S,ST.assign)}
-function renderAll(){recalc();renderStats();renderAlerts();renderCalendar();renderTimeline();renderBlocksTable('#blocks',R,true);renderPlanner();renderScenarios();renderPrint()}
+function renderAll(){recalc();renderStats();renderAlerts();renderBalances();renderCalendar();updateReadout();renderTimeline();renderBlocksTable('#blocks',R,true);renderPlanner();renderScenarios();renderPrint()}
 
 function renderStats(){
   const t=R.totals,S=ST.S,ok=R.closingAL>=S.reserveHours-0.05;
@@ -545,6 +559,7 @@ function renderStats(){
   <div class="stat"><div class="k">Leave days used</div><div class="v">${t.leaveDays}</div><div class="s">${t.alDays} AL · ${t.lslDays} LSL</div></div>
   <div class="stat"><div class="k">Days off</div><div class="v">${t.daysOff}</div><div class="s">${R.blocks.length} block${R.blocks.length===1?'':'s'} (${R.totalsEx.daysOff} excl. shutdown)</div></div>
   <div class="stat"><div class="k">Return on leave</div><div class="v">${t.leaveDays?f2(t.ror):'–'}</div><div class="s">${t.leaveDays?rl+' · days off per leave day':'Pick some leave days'}</div></div>
+  <div class="stat"><div class="k">AL left to spend</div><div class="v ${R.closingAL-S.reserveHours<-0.05?'neg':''}">${hh(R.closingAL-S.reserveHours)}</div><div class="s">${f1((R.closingAL-S.reserveHours)/S.hoursPerDay)} days above the ${hh(S.reserveHours)} reserve</div></div>
   <div class="stat"><div class="k">AL on ${fmtS(DN(S.windowEnd))}</div><div class="v">${hh(R.closingAL)}</div><div class="s"><span class="pill ${ok?'ok':'warn'}">${ok?'Reserve kept':'Below reserve by '+hh(S.reserveHours-R.closingAL)}</span> (${hh(S.reserveHours)} reserve)</div></div>
   <div class="stat"><div class="k">Lowest AL balance</div><div class="v">${hh(R.low.val)}</div><div class="s">${R.low.val<-0.05?'<span class="pill bad">Negative</span> ':''}${fmtS(DN(R.low.iso))}</div></div>
   <div class="stat"><div class="k">LSL remaining</div><div class="v">${hh(R.lslLeftHrs)}</div><div class="s">${f1(R.lslLeftHrs/S.hoursPerDay)} days of ${f1(R.entitlement/S.hoursPerDay)}</div></div>`;
@@ -553,6 +568,49 @@ function renderAlerts(){
   const w=R.warnings;
   $('#alerts').innerHTML=w.map(x=>`<div class="alert ${x.level}"><b>${x.level==='bad'?'Problem':x.level==='warn'?'Check':'Note'}:</b><span>${esc(x.msg)}</span></div>`).join('');
 }
+
+/* ----- balances panel + day readout ----- */
+function renderBalances(){
+  const S=ST.S,t=R.totals,hpd=S.hoursPerDay;
+  const used=t.alHours,accrued=R.closingAL-S.alBalanceHours+used,total=S.alBalanceHours+accrued;
+  const spend=R.closingAL-S.reserveHours;
+  const sdDays=R.days.filter(d=>d.n>R.start&&d.eff==='AL'&&d.sd).length;
+  const today=Math.floor(Date.now()/MS),nowBal=today>R.start&&today<=R.end?R.days[today-R.start].alBal:null;
+  const seg=v=>Math.max(0,Math.min(100,total>0?v/total*100:0));
+  const resSeg=Math.min(S.reserveHours,Math.max(0,R.closingAL)),freeSeg=Math.max(0,R.closingAL-S.reserveHours);
+  const E=R.entitlement,lu=E-R.lslLeftHrs,phl=R.days.filter(d=>d.phL).length;
+  const cls=v=>v<-0.05?'neg':'';
+  $('#balances').innerHTML=`<h2>Your balances</h2><div class="balgrid">
+  <div><h3>Annual leave</h3>
+   <div class="stack" role="img" aria-label="AL used ${hh(used)}, reserve ${hh(resSeg)}, left to spend ${hh(freeSeg)}"><i class="u" style="width:${seg(used)}%"></i><i class="r" style="width:${seg(resSeg)}%"></i><i class="f" style="width:${seg(freeSeg)}%"></i></div>
+   <div class="stackleg"><span>■ Allocated ${hh(used)}</span><span>▨ Reserve ${hh(resSeg)}</span><span style="color:var(--ok)">■ Left to spend ${hh(freeSeg)}</span></div>
+   <table class="baltbl"><tr><td>Balance on ${fmt(S.alBalanceDate)}</td><td>${hh(S.alBalanceHours)}</td></tr>
+   <tr><td>+ Accrual to ${fmt(S.windowEnd)} <span class="badge-est">estimate</span></td><td>+${hh(accrued)}</td></tr>
+   <tr class="tot"><td>Total annual leave you can draw on</td><td>${hh(total)}</td></tr>
+   <tr><td>− Leave you have allocated (${t.alDays} days${sdDays?`, ${sdDays} of them shutdown`:''})</td><td>−${hh(used)}</td></tr>
+   <tr class="tot"><td>= Balance on ${fmt(S.windowEnd)}</td><td class="${cls(R.closingAL)}">${hh(R.closingAL)}</td></tr>
+   <tr><td>− Reserve to hold back</td><td>−${hh(S.reserveHours)}</td></tr>
+   <tr class="key"><td>Left to spend on more leave</td><td class="${spend<-0.05?'neg':'pos'}">${hh(spend)} <span class="muted small">(${f1(spend/hpd)} days)</span></td></tr></table>
+   ${nowBal!=null?`<p class="muted small">Balance today (${fmtS(today)}) is about ${hh(nowBal)}. Lowest point in the plan: ${hh(R.low.val)} on ${fmt(R.low.iso)}.</p>`:`<p class="muted small">Lowest point in the plan: ${hh(R.low.val)} on ${fmt(R.low.iso)}.</p>`}</div>
+  <div><h3>Long service leave</h3>
+   <div class="stack" role="img" aria-label="LSL used ${hh(lu)} of ${hh(E)}"><i class="l" style="width:${E>0?Math.min(100,lu/E*100):0}%"></i></div>
+   <div class="stackleg"><span style="color:var(--lsl)">■ Used ${hh(lu)}</span><span>Remaining ${hh(R.lslLeftHrs)}</span></div>
+   <table class="baltbl"><tr><td>Entitlement (${S.lslWeeks} weeks) <span class="badge-est">estimate</span></td><td>${hh(E)} <span class="muted small">(${f1(E/hpd)} days)</span></td></tr>
+   <tr><td>Available from</td><td>${fmt(ISO(R.avail))}</td></tr>
+   <tr><td>− LSL allocated (${t.lslDays} days${phl?`, ${phl} public holiday${phl>1?'s':''} charged`:''})</td><td>−${hh(lu)}</td></tr>
+   <tr class="key"><td>LSL remaining</td><td class="${cls(R.lslLeftHrs)}">${hh(R.lslLeftHrs)} <span class="muted small">(${f1(R.lslLeftHrs/hpd)} days)</span></td></tr></table>
+   <p class="muted small">Click days on the calendar and these figures update. Hover or tap any day to see the balances after it.</p></div></div>`;
+}
+let focusIso=null;
+function updateReadout(){
+  const el=$('#readout');if(!el)return;
+  const n=focusIso?DN(focusIso):null;
+  if(n==null||n<R.start||n>R.end){el.innerHTML=`<span class="muted">Hover or tap a day on the calendar to see your balances after that day.</span> Plan ends with <b>${hh(R.closingAL)}</b> AL (<b class="${R.closingAL-ST.S.reserveHours<-0.05?'neg':'pos'}">${hh(R.closingAL-ST.S.reserveHours)}</b> above reserve) and <b>${hh(R.lslLeftHrs)}</b> LSL.`;return}
+  const d=R.days[n-R.start],type=d.phL?'public holiday charged to LSL':d.full?'public holiday':!d.wk?'weekend':d.used==='AL'?'annual leave':d.used==='LSL'?'long service leave':'working day';
+  el.innerHTML=`<b>${fmt(d.iso)}</b> <span class="muted">(${type})</span> · AL balance after this day <b class="${d.alBal<-0.05?'neg':''}">${hh(d.alBal)}</b> · LSL left <b>${hh(d.lslBal)}</b> · AL left to spend at the end <b class="${R.closingAL-ST.S.reserveHours<-0.05?'neg':'pos'}">${hh(R.closingAL-ST.S.reserveHours)}</b>`;
+}
+document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('#months [data-iso]');if(b){focusIso=b.dataset.iso;updateReadout()}});
+document.addEventListener('focusin',e=>{const b=e.target.closest&&e.target.closest('#months [data-iso]');if(b){focusIso=b.dataset.iso;updateReadout()}});
 
 /* ----- calendar ----- */
 function dayInfo(n){
@@ -569,7 +627,7 @@ function renderCalendar(){
     const first=Math.round(Date.UTC(y,m,1)/MS),dim=new Date(Date.UTC(y,m+1,0)).getUTCDate();
     let lead=(DOW(first)+6)%7,cells='';
     for(let i=0;i<lead;i++)cells+='<button class="day blank" disabled aria-hidden="true"></button>';
-    let al=0,lsl=0;
+    let al=0,lsl=0;const lastN=Math.min(first+dim-1,R.end),mb=lastN>=R.start?R.days[lastN-R.start].alBal:null;
     for(let dd=1;dd<=dim;dd++){
       const n=first+dd-1,d=dayInfo(n);
       const inWin=n>=ws&&n<=we&&n>R.start&&n<=R.end;
@@ -579,7 +637,7 @@ function renderCalendar(){
         if(d.phL){cls+=' lsl phl';tag='PH·LSL';desc='Public holiday charged to long service leave'}
         else{cls+=' ph';tag='PH';desc='Public holiday: '+d.hol.name}
       }else if(!d.wk){cls+=' we';desc='Weekend'}
-      else if(d.used==='AL'){cls+=' al';tag='AL';desc='Annual leave'}
+      else if(d.used==='AL'){cls+=' al';tag=S.showBal?'AL '+Math.round(d.alBal):'AL';desc='Annual leave, balance after this day '+f1(d.alBal)+'h'}
       else if(d.used==='LSL'){cls+=' lsl';tag='LSL';desc='Long service leave'+(d.badLsl?' (not yet available!)':'')}
       else if(d.unfunded){cls+=' unf';tag='!';desc='Shutdown day with no leave assigned'}
       else{cls+=' work';desc='Working day'}
@@ -589,9 +647,9 @@ function renderCalendar(){
       if(n===today)cls+=' today';
       const clickable=inWin&&d.wk&&!d.full;
       const pd=d.part?`<i class="pd" title="${esc(d.hol.name)}">½</i>`:'';
-      cells+=`<button class="${cls}" ${clickable?`data-d="${d.iso}"`:'disabled'} title="${esc(fmt(d.iso)+' · '+desc+(d.sd?' · shutdown':''))}" aria-label="${esc(fmt(d.iso)+', '+desc)}">${pd}<span class="n">${dd}</span><span class="t">${tag}</span></button>`;
+      cells+=`<button class="${cls}" data-iso="${d.iso}" ${clickable?`data-d="${d.iso}"`:'disabled'} title="${esc(fmt(d.iso)+' · '+desc+(d.sd?' · shutdown':''))}" aria-label="${esc(fmt(d.iso)+', '+desc)}">${pd}<span class="n">${dd}</span><span class="t">${tag}</span></button>`;
     }
-    html+=`<div class="month"><header><b>${['January','February','March','April','May','June','July','August','September','October','November','December'][m]} ${y}</b><span>${al?al+' AL':''}${al&&lsl?' · ':''}${lsl?lsl+' LSL':''}</span></header><div class="dow">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cells">${cells}</div></div>`;
+    html+=`<div class="month"><header><b>${['January','February','March','April','May','June','July','August','September','October','November','December'][m]} ${y}</b><span>${al?al+' AL':''}${al&&lsl?' · ':''}${lsl?lsl+' LSL':''}</span></header><div class="dow">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cells">${cells}</div><div class="mfoot">AL balance at month end: <b>${mb==null?'–':hh(mb)}</b></div></div>`;
     m++;if(m>11){m=0;y++}
   }
   $('#months').innerHTML=html;
@@ -821,7 +879,8 @@ function renderPrint(){
 $('#btnPrint').onclick=()=>{renderPrint();window.print()};
 
 /* ----- init ----- */
-function init(){renderSetup();renderHolidays();syncOpt();renderAll();if(OPT)renderOpt();showTab((location.hash||'#plan').slice(1))}
+$('#chkBal').onchange=e=>{ST.S.showBal=e.target.checked;save();renderCalendar()};
+function init(){$('#chkBal').checked=!!ST.S.showBal;renderSetup();renderHolidays();syncOpt();renderAll();if(OPT)renderOpt();showTab((location.hash||'#plan').slice(1))}
 init();
 </script>
 </body>
